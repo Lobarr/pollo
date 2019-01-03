@@ -1,0 +1,1 @@
+export GOOGLE_APPLICATION_KEY=~/pollo/apikey.json 

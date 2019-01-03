@@ -1,0 +1,8 @@
+# Environments
+.env
+venv/
+.vscode
+__pycache__/
+*.py[cod]
+*$py.class
+apikey.json

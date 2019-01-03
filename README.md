@@ -1,1 +1,3 @@
-export GOOGLE_APPLICATION_KEY=~/pollo/apikey.json 
+# Pollo
+
+Video transcriber using Google Speech to Text API

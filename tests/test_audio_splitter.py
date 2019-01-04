@@ -5,7 +5,8 @@ myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + '/../')
 
 import pytest
-from pollo import AudioSplitter, VideoConverter
+from pollo.audio_splitter import AudioSplitter
+from pollo.video_converter import VideoConverter
 from pydub import AudioSegment
 from expects import expect, equal, be_true, be
 

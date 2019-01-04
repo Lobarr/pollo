@@ -9,10 +9,10 @@ class VideoConverter:
   Converts videos to wav
   """
   def __init__(self, fn: str):
-    self.fn = fn
+    self.__fn = fn
   
   def convert(self):
-    fn, f_ext = os.path.splitext(self.fn)
+    fn, f_ext = os.path.splitext(self.__fn)
     (
       ffmpeg
       .input(f'{fn}{f_ext}')

@@ -5,7 +5,7 @@ myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + '/../')
 
 import pytest
-from pollo import VideoConverter
+from pollo.video_converter import VideoConverter
 from expects import expect, equal, be_true
 
 class TestVideoConverter(object):

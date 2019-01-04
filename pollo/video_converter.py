@@ -15,7 +15,7 @@ class VideoConverter:
     fn, f_ext = os.path.splitext(self.fn)
     (
       ffmpeg
-      .input('{}{}'.format(fn, f_ext))
-      .output('{}.wav'.format(fn))
+      .input(f'{fn}{f_ext}')
+      .output(f'{fn}.wav')
       .run()
     )

@@ -14,5 +14,5 @@ class TestVideoConverter(object):
     video_converter = VideoConverter(filepath)
     video_converter.convert()
     filename, _ = os.path.splitext(filepath)
-    expect(os.path.exists('{}.wav'.format(filename))).to(be_true)
-    os.remove('{}.wav'.format(filename))
+    expect(os.path.exists(f'{filename}.wav')).to(be_true)
+    os.remove(f'{filename}.wav')

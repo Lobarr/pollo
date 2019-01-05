@@ -12,7 +12,8 @@ class AudioSplitter:
     if fn.index('.wav') > 0:
       self.__audio = AudioSegment.from_wav(fn).set_channels(1) # converts to mono as google api supports just mono
       self.__fn = fn
-
+  def __del__(self):
+    os.remove(self.__fn)
   def split(self) -> list:
     split_audios = []
     duration = self.__audio.duration_seconds
@@ -20,7 +21,8 @@ class AudioSplitter:
       split_fn = os.path.join(os.path.dirname(os.path.abspath(self.__fn)), f'{uuid.uuid4()}.wav')
       if (duration / LIMIT) > 1:
         limit_ms = LIMIT * 1000 # seconds to ms 
-        split = self.__audio[:limit_ms] 
+        split = self.__audio[:limit_ms]
+        self.__audio = self.__audio[limit_ms:] 
         split.export(split_fn, format='wav')
         split_audios.append(split_fn)
       else:

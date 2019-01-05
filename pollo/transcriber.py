@@ -10,7 +10,7 @@ from pollo.audio_splitter import AudioSplitter
 from pollo.video_converter import VideoConverter
 
 ACCENTS = ['en-US', 'en-GB']
-CONCURRENCY = 4
+CONCURRENCY = 6
 
 class Transcriber(VideoConverter, AudioSplitter):
   """
@@ -27,7 +27,6 @@ class Transcriber(VideoConverter, AudioSplitter):
     self.__transcripts: dict = {}
     self.__jobs: Queue = Queue()
     self.__files: list = self.split()
-    self.__file: str = split_fn
     self.__accent: str = accent
     for index, file in enumerate(self.__files): 
       self.__jobs.put({'index': index, 'fn': file})
@@ -35,7 +34,6 @@ class Transcriber(VideoConverter, AudioSplitter):
   deletes files created from splitting
   """
   def __del__(self):
-    os.remove(f'{self.__file}.wav')
     for file in self.__files:
       os.remove(file)
   """
@@ -77,4 +75,4 @@ class Transcriber(VideoConverter, AudioSplitter):
       worker = Thread(target=self.__transcribe)
       worker.start()
     self.__jobs.join()
-    return self.__transcripts
+    return ' '.join([self.__transcripts[str(index)] for index in range(len(self.__transcripts)) if isinstance(self.__transcripts[str(index)], str)])

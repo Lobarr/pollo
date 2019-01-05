@@ -4,7 +4,7 @@ COPY . /pollo
 
 WORKDIR /pollo
 
-ENV GOOGLE_APPLICATION_KEY ./apikey.json
+ENV GOOGLE_APPLICATION_CREDENTIALS ~/pollo/apikey.json 
 
 RUN sudo apt update  && \
   sudo apt install ffmpeg && \

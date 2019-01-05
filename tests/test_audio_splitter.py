@@ -5,7 +5,7 @@ myPath = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, myPath + '/../')
 
 import pytest
-from pollo.audio_splitter import AudioSplitter
+from pollo.audio_splitter import AudioSplitter, LIMIT
 from pollo.video_converter import VideoConverter
 from pydub import AudioSegment
 from expects import expect, equal, be_true, be
@@ -32,9 +32,9 @@ class TestAudioSplitter(object):
     for index in range(len(files)):
       if index != len(files)-1:
         split = AudioSegment.from_wav(files[index])
-        expect(int(split.duration_seconds)).to(be(60))
+        expect(int(split.duration_seconds)).to(be(LIMIT))
       else:
-        _, secs = divmod(audio.duration_seconds, 60)
+        _, secs = divmod(audio.duration_seconds, LIMIT)
         split = AudioSegment.from_wav(files[index])
         expect(int(split.duration_seconds)).to(be(int(secs)))
     os.remove(f'{filename}.wav')

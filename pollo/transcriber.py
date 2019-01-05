@@ -1,17 +1,16 @@
 import os
 import io
-import logging
 
 from threading import Thread
 from queue import Queue
 from pydub import AudioSegment 
 from google.cloud import speech
-from google.cloud.speech import enums
-from google.cloud.speech import types
+from google.cloud.speech import enums, types
 from pollo.audio_splitter import AudioSplitter
 from pollo.video_converter import VideoConverter
 
 ACCENTS = ['en-US', 'en-GB']
+CONCURRENCY = 4
 
 class Transcriber(VideoConverter, AudioSplitter):
   """
@@ -24,14 +23,14 @@ class Transcriber(VideoConverter, AudioSplitter):
     self.convert()
     split_fn, _ = os.path.splitext(fn)
     AudioSplitter.__init__(self, f'{split_fn}.wav')
-    self.__client = speech.SpeechClient()
-    self.__transcripts = {}
-    self.__files_queue = Queue()
-    self.__files = self.split()
-    self.__file = split_fn
-    self.__accent = accent
+    self.__client: speech.SpeechClient = speech.SpeechClient()
+    self.__transcripts: dict = {}
+    self.__jobs: Queue = Queue()
+    self.__files: list = self.split()
+    self.__file: str = split_fn
+    self.__accent: str = accent
     for index, file in enumerate(self.__files): 
-      self.__files_queue.put({'index': index, 'fn': file})
+      self.__jobs.put({'index': index, 'fn': file})
   """
   deletes files created from splitting
   """
@@ -42,34 +41,40 @@ class Transcriber(VideoConverter, AudioSplitter):
   """
   loads audio file into memory
   """
-  def _load_audio(self, fn):
+  def _load_audio(self, fn: str) -> None:
     with io.open(fn, 'rb') as f:
       content = f.read()
       return types.RecognitionAudio(content=content)
   """
   returns sample rate of audio file
   """
-  def _sample_rate(self, fn):
+  def _sample_rate(self, fn: str) -> int:
     file = AudioSegment.from_wav(fn)
     return file.frame_rate
   """
   returns transcript of audio file
   """ 
-  def __transcribe(self):
-    while not self.__files_queue.empty():
-      work = self.__files_queue.get()
-      audio = self._load_audio(work['fn'])
-      config = types.RecognitionConfig(
-      encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-      sample_rate_hertz=self._sample_rate(work['fn']),
-      language_code=self.__accent)
-      response = self.__client.recognize(config, audio)
-      self.__transcripts[str(work['index'])] = response.results
-      self.__files_queue.task_done()
-  def run(self):
-    num_threads = 4
-    for _ in range(num_threads):
+  def __transcribe(self) -> None:
+    while not self.__jobs.empty():
+      try:
+        job = self.__jobs.get()
+        audio = self._load_audio(job['fn'])
+        config = types.RecognitionConfig(
+        encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+        sample_rate_hertz=self._sample_rate(job['fn']),
+        language_code=self.__accent)
+        response = self.__client.recognize(config, audio)
+        self.__transcripts[str(job['index'])] = ' '.join([result.alternatives[0].transcript for result in response.results])
+      except Exception as e:
+        self.__transcripts[str(job['index'])] = {'exception': e}
+      finally:
+        self.__jobs.task_done()
+  """
+  runs the transriber engine with specified concurrency
+  """
+  def run(self) -> dict:
+    for _ in range(CONCURRENCY):
       worker = Thread(target=self.__transcribe)
       worker.start()
-    self.__files_queue.join()
+    self.__jobs.join()
     return self.__transcripts

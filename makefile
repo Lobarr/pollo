@@ -1,16 +1,21 @@
 init:
 	pip install -r requirements.txt
 
-start:
+start-server:
+	python app.py
+
+start-client:
+	cd client && npm run serve -- --port=3001
+
+start-app:
+	docker-compose -f docker-compose.yml kill && docker-compose up -d --build --remove-orphans
+
+start-docker:
 	docker build -t pollo:prod .
-	docker run -d --rm -p 80:3000 pollo:prod
+	docker run -p 80:3000 pollo:prod
 
 freeze: 
 	pip freeze > requirements.txt
 
 test:
 	python -m pytest 
-
-test-docker:
-	docker build -t pollo:test -f Dockerfile.test .
-	docker run --rm pollo:test

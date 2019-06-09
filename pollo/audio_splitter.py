@@ -18,7 +18,7 @@ class AudioSplitter:
     split_audios = []
     duration = self.__audio.duration_seconds
     while True:
-      split_fn = os.path.join(os.path.dirname(os.path.abspath(self.__fn)), f'{uuid.uuid4()}.wav')
+      split_fn = os.path.join(os.path.dirname(self.__fn), f'{uuid.uuid4()}.wav')
       if (duration / LIMIT) > 1:
         limit_ms = LIMIT * 1000 # seconds to ms 
         split = self.__audio[:limit_ms]

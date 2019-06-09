@@ -4,15 +4,11 @@ COPY . /pollo
 
 WORKDIR /pollo
 
-ENV GOOGLE_APPLICATION_CREDENTIALS ~/pollo/apikey.json 
-
-RUN apk update  && \
+RUN  apk update  && \
   apk add ffmpeg && \
   apk add make && \
   apk add gcc && \
   apk add g++ && \
   make init
 
-CMD python app.py
-
-EXPOSE 3000
+CMD make test

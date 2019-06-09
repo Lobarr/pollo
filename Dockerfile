@@ -4,7 +4,7 @@ COPY . /pollo
 
 WORKDIR /pollo
 
-ENV GOOGLE_APPLICATION_CREDENTIALS ~/pollo/apikey.json 
+ENV GOOGLE_APPLICATION_CREDENTIALS ./apikey.json 
 
 RUN apk update  && \
   apk add ffmpeg && \

@@ -1,10 +1,7 @@
-from vibora import Vibora
-from vibora.limits import RouteLimits
-from vibora.blueprints import Blueprint
-from vibora.responses import JsonResponse
+from aiohttp import web
 
-router = Blueprint()
+router = web.RouteTableDef()
 
-@router.route('/ping', methods=['GET'])
-async def ping():
-  return JsonResponse({'ping': 'pong'})
+@router.get('/ping')
+async def ping(request):
+  return web.json_response({'ping': 'pong'})

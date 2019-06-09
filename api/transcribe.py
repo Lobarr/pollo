@@ -17,10 +17,9 @@ async def emit(event: str, data: object, sid: str = None):
 
 def transribe_job(fn, accent, sid):
   try:
-    transcriber = Transcriber(File.path(fn), accent)
-    transribed = transcriber.run()
+    transcribed = Transcriber(File.path(fn), accent).run()
     asyncio.run(emit('transcribe', {
-      'msg': transribed,
+      'msg': transcribed,
       'status': 'success'
     }, sid))
   except Exception as error:

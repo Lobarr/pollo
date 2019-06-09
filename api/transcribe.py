@@ -38,10 +38,6 @@ async def upload(request):
   reader = await request.multipart()
   field = await reader.next()
   await File.save(field)
-  await emit('status', {
-    'msg': 'Uploaded',
-    'status': 'info'
-  })
   return web.json_response({'status': 'success', 'msg': 'uploaded'})
 
 @sio.on('transcribe')
@@ -54,17 +50,17 @@ async def transcribe(sid, data: Dict[str, str]):
       await emit('status', {
         'msg': 'Transcribing',
         'status': 'info'
-      })
+      }, sid)
       worker = Thread(target=transribe_job, args=(fn, accent, sid))
       worker.start()
     else:
       await emit('status', {
         'msg': 'File uploaded exceeds 5 mins limit',
         'status': 'error'
-      })
+      }, sid)
   except Exception as error:
     await emit('status', {
       'msg': str(error),
       'status': 'error'
-    })
+    }, sid)
 

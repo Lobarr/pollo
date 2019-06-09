@@ -2,6 +2,7 @@ import os
 import io
 
 from threading import Thread
+from enum import Enum
 from queue import Queue
 from pydub import AudioSegment 
 from google.cloud import speech
@@ -9,8 +10,12 @@ from google.cloud.speech import enums, types
 from pollo.audio_splitter import AudioSplitter
 from pollo.video_converter import VideoConverter
 
+class Const(Enum):
+  EN_US = 'en-US'
+  EN_GB = 'en-GB'
+  CONCURRENCY = 6
+
 ACCENTS = ['en-US', 'en-GB']
-CONCURRENCY = 6
 
 class Transcriber(VideoConverter, AudioSplitter):
   """
@@ -52,7 +57,7 @@ class Transcriber(VideoConverter, AudioSplitter):
   """
   returns transcript of audio file
   """ 
-  def __transcribe(self) -> None:
+  def _transcribe(self) -> None:
     while not self.__jobs.empty():
       try:
         job = self.__jobs.get()
@@ -71,8 +76,8 @@ class Transcriber(VideoConverter, AudioSplitter):
   runs the transriber engine with specified concurrency
   """
   def run(self) -> dict:
-    for _ in range(CONCURRENCY):
-      worker = Thread(target=self.__transcribe)
+    for _ in range(Const.CONCURRENCY.value):
+      worker = Thread(target=self._transcribe)
       worker.start()
     self.__jobs.join()
-    return ' '.join([self.__transcripts[str(index)] for index in range(len(self.__transcripts)) if isinstance(self.__transcripts[str(index)], str)])
+    return ' '.join([self._transcripts[str(index)] for index in range(len(self.__transcripts)) if isinstance(self.__transcripts[str(index)], str)])

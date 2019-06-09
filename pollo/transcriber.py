@@ -80,4 +80,4 @@ class Transcriber(VideoConverter, AudioSplitter):
       worker = Thread(target=self._transcribe)
       worker.start()
     self.__jobs.join()
-    return ' '.join([self._transcripts[str(index)] for index in range(len(self.__transcripts)) if isinstance(self.__transcripts[str(index)], str)])
+    return ' '.join([self.__transcripts[str(index)] for index in range(len(self.__transcripts)) if isinstance(self.__transcripts[str(index)], str)])

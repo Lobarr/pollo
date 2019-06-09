@@ -9,7 +9,7 @@ freeze:
 	pip freeze > requirements.txt
 
 test:
-	python -m pytest tests 
+	python -m pytest 
 
 test-docker:
 	docker build -t pollo:test -f Dockerfile.test .

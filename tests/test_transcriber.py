@@ -27,7 +27,7 @@ class TestTranscriber(object):
   def test_transribe_run(self, *args):
     transribed = Transcriber(filepath, Const.EN_GB.value).run()
     args[0].assert_called_with()
-    args[1].assert_called_with
+    args[1].assert_called_with()
   
     
 

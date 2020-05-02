@@ -92,4 +92,3 @@ async def transcribe(socket_id: str, data: Dict[str, str]):
     }
     
     await socket.emit(event=SocketMessage.STATUS.value, data=ctx, sid=socket_id)
-

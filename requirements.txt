@@ -42,7 +42,7 @@ pylint==2.2.2
 pytest==4.0.2
 python-dateutil==2.7.5
 python-dotenv==0.10.1
-python-engineio==3.8.1
+python-engineio==3.8.2.post1
 python-socketio==4.1.0
 pytz==2018.7
 pytzdata==2018.7

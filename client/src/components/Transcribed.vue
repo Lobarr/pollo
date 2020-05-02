@@ -22,8 +22,8 @@ export default {
   props: {
     body: String,
     loading: Boolean,
-  }
-}
+  },
+};
 </script>
 
 <style lang="scss" scoped>

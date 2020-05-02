@@ -4,10 +4,10 @@
   >
     <a-upload-dragger
       accept="video/*,audio/*"
-      name="file" 
-      :multiple="true" 
-      action="http://localhost:3000/upload" 
-      @change="handleChange"
+      name="file"
+      :multiple="false"
+      action="http://localhost:3000/upload"
+      @change="handleUpload"
     >
       <p class="ant-upload-text">Click or drag file to this area to upload</p>
     </a-upload-dragger>
@@ -15,8 +15,12 @@
 </template>
 
 <script>
-import Vue from 'vue';
-import utils from '../utils';
+
+const UploadStatus = {
+  UPLOADING: 'uploading',
+  DONE: 'done',
+  ERROR: 'error',
+};
 
 export default {
   name: 'Uploader',
@@ -24,27 +28,32 @@ export default {
     accent: String,
   },
   methods: {
-    handleChange(info) {
-      const status = info.file.status;
-      if (status == 'uploading') {
+    handleUpload(ctx) {
+      const { file } = ctx;
+      const { status, name, response } = file;
+      const { message } = response;
+
+      if (status === UploadStatus.UPLOADING) {
         this.$notification.info({
           key: 'uploader',
-          message: `${info.file.name} file uploading...`,
+          message: `${name} file uploading...`,
         });
       }
-      if (status === 'done') {
+
+      if (status === UploadStatus.DONE) {
         this.$notification.success({
           key: 'uploader',
-          message: `${info.file.name} file uploaded successfully.`,
+          message: `${name} file uploaded successfully.`,
         });
+
         this.$socket.emit('transcribe', {
-          'fn': info.file.name,
-          'accent': this.accent,
-        })
-      } else if (status === 'error') {
+          filename: name,
+          accent: this.accent,
+        });
+      } else if (status === UploadStatus.ERROR) {
         this.$notification.error({
           key: 'uploader',
-          message: info.file.response.msg,
+          message,
         });
       }
     },

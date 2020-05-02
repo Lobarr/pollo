@@ -8,7 +8,7 @@ start-client:
 	cd client && npm run serve -- --port=3001
 
 start-app:
-	docker-compose -f docker-compose.yml kill && docker-compose up -d --build --remove-orphans
+	docker-compose -f docker-compose.yml kill && docker-compose up --build --remove-orphans
 
 start-docker:
 	docker build -t pollo:prod .
@@ -16,6 +16,3 @@ start-docker:
 
 freeze: 
 	pip freeze > requirements.txt
-
-test:
-	python -m pytest 

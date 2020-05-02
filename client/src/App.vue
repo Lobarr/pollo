@@ -10,7 +10,12 @@
           <Title title="Pollo - Video / Audio Transcriber" />
         </a-row>
         <a-row class="accent-container">
-          <a-select defaultValue="en-US" style="width: 120px" @change="handleAccentChange" v-model="accent">
+          <a-select
+            defaultValue="en-US"
+            style="width: 120px"
+            @change="handleAccentChange"
+            v-model="accent"
+          >
             <a-select-option value="en-GB">en-GB</a-select-option>
             <a-select-option value="en-US">en-US</a-select-option>
           </a-select>
@@ -29,61 +34,60 @@ import Vue from 'vue';
 import VueSocketIO from 'vue-socket.io';
 import Antd from 'ant-design-vue';
 import { Uploader, Title, Transcribed } from './components';
-import { notification, emit } from './utils';
 
-Vue.use(Antd)
-
-Vue.mixin({
-  notification,
-  emit,
-});
+Vue.use(Antd);
 
 Vue.use(new VueSocketIO({
-    debug: true,
-    connection: 'http://localhost:3000',
+  debug: true,
+  connection: 'http://localhost:3000',
 }));
 
 export default {
   name: 'app',
+
   sockets: {
-    status({ status, msg }) {
+    status({ status, message }) {
       this.$notification[status]({
         key: 'status',
-        message: msg,
+        message,
       });
-      if (status === 'info' && msg === 'Transcribing') {
+
+      if (status === 'info' && message === 'Transcribing') {
         this.loading = true;
       } else {
         this.loading = false;
       }
     },
 
-    transcribe({ msg }) {
-      this.bot = msg;
+    transcribe({ message }) {
+      this.bot = message;
       this.loading = false;
-    }
+    },
   },
+
   components: {
     Title,
     Uploader,
     Transcribed,
   },
+
   data()  {
     return {
       accent: 'en-GB',
-      bot: `Hi, I'm your transcriber bot for today. Let me show you how smart I am :)`,
+      bot: 'Hi, I\'m your transcriber bot for today. Let me show you how smart I am :)',
       loading: false,
-    }
+    };
   },
+
   methods: {
     handleAccentChange(accent) {
       this.accent = accent;
     },
 
     handleRedo() {
-      location.reload();
-    }
-  }
+      window.location.reload();
+    },
+  },
 };
 </script>
 

@@ -11,4 +11,4 @@ services:
   server: 
     build: ./
     ports:
-      - "3003:3000"
+      - "3000:3000"

@@ -2,6 +2,6 @@ from aiohttp import web
 
 router = web.RouteTableDef()
 
-@router.get('/ping')
-async def ping(request):
-  return web.json_response({'ping': 'pong'})
+@router.get('/healthz')
+async def ping(request: web.Request):
+  return web.json_response({'status': 'running'})

@@ -3,64 +3,93 @@ import socketio
 import asyncio
 from threading import Thread
 from typing import Dict
-from pollo import File, Transcriber
-from aiohttp import web
+from core import File, Transcriber
+from aiohttp import web, multipart
+from enum import Enum
 
-sio = socketio.AsyncServer(async_mode='aiohttp')
+socket = socketio.AsyncServer(async_mode='aiohttp')
 router = web.RouteTableDef()
 
-async def emit(event: str, data: object, sid: str = None):
-  if sid != None:
-    await sio.emit(event=event, data=data, sid=sid)
-  else:
-    await sio.emit(event=event, data=data)
 
-def transribe_job(fn, accent, sid):
+class Status(Enum):
+  SUCCESS = 'success'
+  ERROR = 'error'
+  INFO = 'info'
+
+class SocketMessage(Enum):
+  STATUS = 'status'
+  TRANSCRIBE = 'transcribe'
+
+
+
+def transribe_job(filename: str, accent: str, socket_id: str):
   try:
-    transcribed = Transcriber(File.path(fn), accent).run()
-    asyncio.run(emit('transcribe', {
-      'msg': transcribed,
-      'status': 'success'
-    }, sid))
+    file_path = File.path(filename)
+    transcriber = Transcriber(file_path, accent)
+    message = transcriber.run()
+    ctx = {
+      'message': message,
+      'status': Status.SUCCESS.value
+    }
+
+    asyncio.run(socket.emit(event=SocketMessage.TRANSCRIBE.value, data=ctx, sid=socket_id))
+
   except Exception as error:
-    asyncio.run(emit('status', {
-      'msg': str(error),
-      'status': 'error'
-    }, sid))
+    ctx = {
+      'message': str(error),
+      'status': Status.ERROR.value
+    }
+    
+    asyncio.run(socket.emit(event=SocketMessage.STATUS.value, data=ctx, sid=socket_id))
+
   finally:
-    File.delete(fn)
-    _fn = fn.split('.')[0]
-    File.delete(f'{_fn}.wav')
+    File.delete(filename)
+    root = filename.split('.')[0]
+    File.delete(f'{root}.wav')
 
 
 @router.post('/upload')
-async def upload(request):
-  reader = await request.multipart()
-  field = await reader.next()
-  await File.save(field)
-  return web.json_response({'status': 'success', 'msg': 'uploaded'})
+async def upload(request: web.Request):
+  reader: multipart.MultipartReader = await request.multipart()
+  file_ctx = await reader.next()
 
-@sio.on('transcribe')
-async def transcribe(sid, data: Dict[str, str]):
+  await File.save(file_ctx)
+
+  return web.json_response({
+    'message': 'File Uploaded',
+    'status': Status.SUCCESS.value
+  })
+
+@socket.on(SocketMessage.TRANSCRIBE.value)
+async def transcribe(socket_id: str, data: Dict[str, str]):
   try:
-    fn = data.get('fn')
+    filename = data.get('filename')
     accent = data.get('accent')
-    is_verified = File.verify_size(fn)
+    is_verified = File.verify_size(filename)
+
     if is_verified:
-      await emit('status', {
-        'msg': 'Transcribing',
-        'status': 'info'
-      }, sid)
-      worker = Thread(target=transribe_job, args=(fn, accent, sid))
+      ctx = {
+        'message': 'Transcribing',
+        'status': Status.INFO.value
+      }
+
+      await socket.emit(event=SocketMessage.STATUS.value, data=ctx, sid=socket_id)
+
+      worker = Thread(target=transribe_job, args=(filename, accent, socket_id))
       worker.start()
+
     else:
-      await emit('status', {
-        'msg': 'File uploaded exceeds 5 mins limit',
-        'status': 'error'
-      }, sid)
+      ctx = {
+        'message': 'File uploaded exceeds 5 mins limit',
+        'status': Status.ERROR.value
+      }
+      await socket.emit(event=SocketMessage.STATUS.value, data=ctx, sid=socket_id)
+
   except Exception as error:
-    await emit('status', {
-      'msg': str(error),
-      'status': 'error'
-    }, sid)
+    ctx = {
+      'message': str(error),
+      'status': Status.ERROR.value
+    }
+    
+    await socket.emit(event=SocketMessage.STATUS.value, data=ctx, sid=socket_id)
 
